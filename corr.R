@@ -30,9 +30,6 @@ cr=c()
        cr[cumple]= cor(df1$sulfate,df1$nitrate)
     }
    } ##End For i
-  # if (length(cr))
-  #   round(cr,5)
-  # else
      cr    
 } ##END
 
