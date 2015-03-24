@@ -62,15 +62,14 @@ nth_hospital<-function(df,state,measure,num) {
   
    ## Selects only selected state information
    sel<-df$State==state
-   print("sum state")
-   print(sum(sel))
    ## gets min value for a selected measure in a particular state, eliminates NA
    if (num=="best") 
        nth_val<-min(as.numeric(df[[measure]][sel]),na.rm=TRUE)
    else if (num=="worst")
            nth_val<-max(as.numeric(df[[measure]][sel]),na.rm=TRUE)
    else  if (num>=0) 
-           nth_val<-nth(as.numeric(df[[measure]][sel]),num)
+               ##nth_val<-nth(as.numeric(df[[measure]][sel]),num)
+             return(nth(df[sel,],measure,num))
 
 
    ## Selects only hospitals having the nth value in the measure
@@ -78,26 +77,19 @@ nth_hospital<-function(df,state,measure,num) {
 
    ## Joins both conditions
    sel3<-sel&sel2
-
-   if ( sum(sel3,na.rm=TRUE) == 1)
-        ## find outs and returns hospital name for particulare measure value
-        return(min(as.character(df$Hospital.Name[sel3]),na.rm=TRUE))
-   else {
-        df<-df[sel3,]
-        df<-df[ order(df[[measure]], df["Hospital.Name"]),]
-        df$Hospital.Name[sum(sel3,na.rm=TRUE)]
+   ## find outs and returns hospital name for particulare measure value
+   return(min(as.character(df$Hospital.Name[sel3]),na.rm=TRUE))
            
-   }
 }
 
-nth <-function(arreglo,num) {
-## returns the value in the "num"position of an sorted arry
-## not including NA
-
-   arreglo<-sort(arreglo,na.last=NA)
-   return(arreglo[num])
+nth <-function(df,measure,num) {
+## sort state data dataframe using the indicated measure
+##  returns the nposition hospital
+   df<-df[ order(as.numeric(df[[measure]]), df["Hospital.Name"]),]
+   return(df$Hospital.Name[num])
 
 }
+
 
 
 validate_outcome<-function(outcome) {
