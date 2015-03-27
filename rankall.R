@@ -30,7 +30,6 @@ if (!validate_outcome(outcome))
 ## returns NA in case num is lager than hospitals count in a state
 if (num != "worst" && num!="best")
   if (!is.numeric(num))
-##if (sum(df$State==state)<num)  
     return(NA)
 
 ## Select nth hospital
@@ -95,13 +94,17 @@ nth_hospitals<-function(df,measure,num) {
   if (num=="best")
       num<-1
 
-  if (num!="worst")
-     ##Selects the position of each state
-     sel2<-df$pos==num 
-  else {
+  if (num=="worst")
      ## If worst case, then set pos to Max to retreive worst
      sel2<-df$pos==df$Max
+  else {
+     #if ( num > df$Max )
+     #   df$Hospital.Name
+     ##Selects the position of each state
+     sel2<-df$pos==num 
   }
+
+  ##if (sum(df$State==state)<num)  
 
   #Copy Selected rows to df
   df<-df[sel2,c("Hospital.Name","State")]
