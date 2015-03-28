@@ -59,15 +59,6 @@ nth_hospitals<-function(df,measure,num) {
 ## returns hospital name (variable 2) having the nth measure value
 ##         and state abbreviation
   
-   ## Selects only selected state information
-   ##sel<-df$State==state
-   ## gets min value for a selected measure in a particular state, eliminates NA
-   ##if (num=="best") 
-   ##    nth_val<-min(as.numeric(df[[measure]][sel]),na.rm=TRUE)
-   ##else if (num=="worst")
-   ##        nth_val<-max(as.numeric(df[[measure]][sel]),na.rm=TRUE)
-   ##else  if (num>=0) 
-
    ##Selects only the state,hospital name and the measure columns
    df<-df[,c("State","Hospital.Name",measure)]
 
@@ -98,31 +89,27 @@ nth_hospitals<-function(df,measure,num) {
      ## If worst case, then set pos to Max to retreive worst
      sel2<-df$pos==df$Max
   else {
-     #if ( num > df$Max )
-     #   df$Hospital.Name
+     ## Selects Hopsitals having less than the pos selected
+     sel3<-df$Max<num
+     ## Set Name to NA
+     df[sel3,"Hospital.Name"]=NA
+     ## For those NA Hospitals, Set pos=num for the max value 
+     df[df$pos==df$Max & is.na(df$Hospital.Name),"pos"]=num
      ##Selects the position of each state
      sel2<-df$pos==num 
   }
 
-  ##if (sum(df$State==state)<num)  
 
   #Copy Selected rows to df
   df<-df[sel2,c("Hospital.Name","State")]
-
+ 
+  ## Set names as asked in excersice
+  names(df)[1]<-"hospital"
+  names(df)[2]<-"state"
+  
   return(df)
            
 }
-
-nth <-function(df,num) {
-## sort state data dataframe using the indicated measure
-##  returns the nposition hospital for every state
-
-   #df<-df[ order(as.numeric(df[[measure]]), df["Hospital.Name"]),]
-
-   return(df)
-
-}
-
 
 
 validate_outcome<-function(outcome) {
