@@ -1,4 +1,4 @@
-run_analysis<-function (directory) {
+run_analysis<-function () {
 library(data.table)
 #Read test data
 data_test<-read.table("./data/Dataset/test/X_test.txt")
@@ -44,6 +44,9 @@ while (ii<=length(nlabel$V2)) {
 ##Attach activity labels to data set
 data_mix<-cbind(data_mix,label_mix["activity_name"]) 
 ## End Requirement 4
+
+##Requierement 5
+## write.table() using row.name=FALSE
 
 dim(data_mix)
 ##data_mix$activity_name
