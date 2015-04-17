@@ -41,8 +41,10 @@ while (ii<=length(nlabel$V2)) {
    label_mix$activity_name[label_mix$V1==ii] <- nlabel$V2[nlabel$V1== ii]
    ii<-ii+1
 }
-##Attach activity labels to data set
-data_mix<-cbind(data_mix,label_mix["activity_name"]) 
+colnames(subject_mix)<-c("SUBJECT")
+##Attach subject and activity labels to data set
+data_mix<-cbind(subject_mix["SUBJECT"],label_mix["activity_name"],data_mix)
+
 ## End Requirement 4
 
 ##Requierement 5
