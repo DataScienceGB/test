@@ -58,7 +58,8 @@ data_mix<-cbind(subject_mix["SUBJECT"],label_mix["activity_name"],data_mix)
 ## columns 1 and 2 in data_mix are activity_name and subject, so are excluded from the mean
 ## write.table() using row.name=FALSE
 
-out=sapply(split(data_mix[,3,563],list(data_mix$activity_name,data_mix$SUBJECT)),mean)
+##out=sapply(split(data_mix[,3,ncol],list(data_mix$activity_name,data_mix$SUBJECT)),mean)
+out<-aggregate(data_mix[,3:ncol(data_mix)],by=list(activity_name=data_mix$activity_name,subject=data_mix$SUBJECT),mean)
 write.table(file="./data/req5.txt",out,row.name=FALSE)
 
 }
