@@ -1,5 +1,7 @@
 run_analysis<-function () {
+#load libraries needed
 library(data.table)
+
 #Read test data
 data_test<-read.table("./data/Dataset/test/X_test.txt")
 label_test<-read.table("./data/Dataset/test/y_test.txt")
@@ -41,15 +43,25 @@ while (ii<=length(nlabel$V2)) {
    label_mix$activity_name[label_mix$V1==ii] <- nlabel$V2[nlabel$V1== ii]
    ii<-ii+1
 }
-##Attach activity labels to data set
-data_mix<-cbind(data_mix,label_mix["activity_name"]) 
+colnames(subject_mix)<-c("SUBJECT")
+##Attach subject and activity labels to data set
+data_mix<-cbind(subject_mix["SUBJECT"],label_mix["activity_name"],data_mix)
+
 ## End Requirement 4
 
 ##Requierement 5
+##From the data set in step 4, creates a second, independent tidy data set
+## with the average of each variable for each activity and each subject.
+
+## split data in groups by activity_name and subject
+## then use lapply to execute mean in each group
+## columns 1 and 2 in data_mix are activity_name and subject, so are excluded from the mean
 ## write.table() using row.name=FALSE
 
-dim(data_mix)
-##data_mix$activity_name
+##out=sapply(split(data_mix[,3,ncol],list(data_mix$activity_name,data_mix$SUBJECT)),mean)
+out<-aggregate(data_mix[,3:ncol(data_mix)],by=list(activity_name=data_mix$activity_name,subject=data_mix$SUBJECT),mean)
+write.table(file="./data/req5.txt",out,row.name=FALSE)
+
 }
 
 
