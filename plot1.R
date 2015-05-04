@@ -1,6 +1,9 @@
 #load data
-setDefaults('as.Date.character', format = '%d/%M/%Y')
-pc<-read.csv2("./data/power_comsumption_feb2007.txt",stringsAsFactors=FALSE,na.strings="?",dec=".",colClasses=c("Date","character","numeric","numeric","numeric","numeric","numeric","numeric","numeric"))
+#pc<-read.csv2("./data/power_comsumption_feb2007.txt",stringsAsFactors=FALSE,na.strings="?",dec=".",colClasses=c("Date","character","numeric","numeric","numeric","numeric","numeric","numeric","numeric"))
+
+#pc<-read.csv2("./data/power_comsumption_feb2007.txt",stringsAsFactors=FALSE,na.strings="?",dec=".",colClasses=c("Date","character","numeric","numeric","numeric","numeric","numeric","numeric","numeric"))
+library(sqldf)
+pc <- read.csv2.sql("./data/power_comsumption_feb2007.txt", sql = 'select * from file where Date in ("1/2/2007","2/2/2007")')
 
 
 ## Q3
