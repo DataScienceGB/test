@@ -2,7 +2,7 @@ library(sqldf)
 
 #load data
 
-pc <- read.csv2.sql("./data/power_comsumption.txt", sql = 'select * from file where Date in ("1/2/2007","2/2/2007")')
+pc <- read.csv2.sql("./data/household_power_consumption.txt", sql = 'select * from file where Date in ("1/2/2007","2/2/2007")')
 
 datetime<-paste(pc$Date,pc$Time)
 pc$Datetime<-strptime(datetime,"%d/%m/%Y %H:%M:%S")
