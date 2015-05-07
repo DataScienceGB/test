@@ -10,9 +10,14 @@ pc$Datetime<-strptime(datetime,"%d/%m/%Y %H:%M:%S")
 
 
 #plot histogram
-#png(file="plot3.png",width = 480, height = 480)
+png(file="plot3.png",width = 480, height = 480)
 
-plot(pc$Datetime,pc$sub_metering_1,ylab="Energy sub metering", xlab="",type="l")
+plot(pc$Datetime,pc$Sub_metering_1,ylab="Energy sub metering", xlab="",type="l")
+par(new=T)
+plot(pc$Datetime,pc$Sub_metering_2,ylab="",xlab="",type="l",col="red",ylim=range(pc$Sub_metering_1))
+par(new=T)
+plot(pc$Datetime,pc$Sub_metering_3,ylab="",xlab="",type="l",col="blue",ylim=range(pc$Sub_metering_1))
 
-#dev.off()
+legend("topright",legend=colnames(pc)[grep('Sub*',colnames(pc))],col=c("black","red","blue"), lty=1)
+dev.off()
 
