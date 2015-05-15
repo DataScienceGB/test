@@ -6,7 +6,6 @@ library(sqldf)
 
 ## This first line will likely take a few seconds. Be patient!
 NEI <- readRDS("./data/summarySCC_PM25.rds")
-#SCC <- readRDS("./data/Source_Classification_Code.rds")
 
 # Group Emissions by year
 NEI_grp=sqldf("select year, (sum(Emissions)/1000) as sum_Emissions from NEI 
@@ -23,5 +22,6 @@ with (NEI_grp,
       )
 tend<-lm(sum_Emissions~year,NEI_grp)
 abline(tend,lwd="2",col="blue")
+legend("topright",legend=c("PM2.5 Emissions","Emissions Trend"),col=c("green","blue"), lty=1)
 dev.off()
 
