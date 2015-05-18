@@ -11,17 +11,15 @@ library(ggplot2)
 NEI <- readRDS("./data/summarySCC_PM25.rds")
 
 # Group Emissions by year in Baltimore
-NEI_grp=sqldf("select year, type,(sum(Emissions)/1000) as sum_Emissions 
+NEI_grp=sqldf("select year, type,(sum(Emissions)/100) as sum_Emissions 
                 from NEI 
                 where fips='24510' 
                 group by year,type")
 rm(NEI)
 
 #Plot to show
-#png(file="plot1.png",width = 480, height = 480)
-qplot(year,sum_Emissions,data=NEI_grp,facets=.~type,geom=c("point","smooth"))
+png(file="plot3.png",width = 480, height = 480)
+p<-qplot(year,sum_Emissions,data=NEI_grp,facets=.~type,geom=c("point","smooth"),method="lm",color=type)+ labs(title="Baltimore City Emissions by Type")+labs(y="PM2.5 Emissions (100's of Tons)",x="Year")
 
-#tend<-lm(sum_Emissions~year,NEI_grp)
-#abline(tend,lwd="2",col="black")
-#dev.off()
-
+print(p)
+dev.off()
