@@ -1,0 +1,45 @@
+---
+title: "Assesment 1"
+author: "DataScienceGB"
+date: "10/06/2015"
+output: html_document
+---
+
+#Loading and preprocessing the data
+
+```{r}
+library(sqldf)
+
+#Read Activity
+actdf=read.csv("./activity.csv",stringsAsFactors=F)
+
+#summarize steps by day
+act_grp=sqldf("select date, sum(steps) as Steps from actdf where steps!='NA' group by date")
+#convert to Date type for later use
+act_grp$date=paste(act_grp$date,"00:00:00")
+act_grp$date=strptime(act_grp$date,"%Y-%m-%d %H:%M:%S")
+
+```
+#What is mean total number of steps taken per day?
+
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+1. Make a histogram of the total number of steps taken each day
+
+2. Calculate and report the mean and median total number of steps taken per day
+
+
+```{r}
+#Create Steps histogram
+hist(act_grp$Steps,col="red",main="Total number of steps taken per day", xlab="Steps taken a day")
+```
+
+Calculate mean and median values
+
+```{r}
+#Calculate Mean and Median steps taken per day
+mean(act_grp$Steps)
+median(act_grp$Steps)
+```
+
+
