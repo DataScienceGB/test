@@ -20,7 +20,7 @@ act_grp$date=paste(act_grp$date,"00:00:00")
 act_grp$date=strptime(act_grp$date,"%Y-%m-%d %H:%M:%S")
 
 ```
-#What is mean total number of steps taken per day?
+##What is mean total number of steps taken per day?
 
 For this part of the assignment, you can ignore the missing values in the dataset.
 
@@ -40,6 +40,32 @@ Calculate mean and median values
 #Calculate Mean and Median steps taken per day
 mean(act_grp$Steps)
 median(act_grp$Steps)
+```
+##What is the average daily activity pattern?
+
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+
+First calculate mean values for each interval:
+
+```{r}
+#average days by interval
+act_avg=sqldf("select  interval,avg(steps) as Steps from actdf where steps!='NA' group by interval")
+```
+Now plot the timeline
+```{r}
+#Create  create timeline
+plot(act_avg$interval,act_avg$Steps,type="l",col="blue",main="Average number of steps by interval", ylab="Average steps taken by interval",xlab="5-minute day interval")
+```
+
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+Obtain the maximum value and interval number
+
+```{r}
+#Calculate maximum 5-minute interval across all days
+#Order by will show maximum value and interval as the first row, and limit 1 claus will only show the first row
+sqldf("select interval, max(Steps) from act_avg group by interval order by 2 desc limit 1")
 ```
 
 
