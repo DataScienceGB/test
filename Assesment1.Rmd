@@ -9,15 +9,19 @@ output: html_document
 
 ```{r}
 library(sqldf)
+```
+We'll be using sqldf package to perfom data agregation and selection
+Starting by reading data into a DataFrame using standard read.csv funciton
 
+```{r}
 #Read Activity
 actdf=read.csv("./activity.csv",stringsAsFactors=F)
 
 #summarize steps by day
 act_grp=sqldf("select date, sum(steps) as Steps from actdf where steps!='NA' group by date")
 #convert to Date type for later use
-act_grp$date=paste(act_grp$date,"00:00:00")
-act_grp$date=strptime(act_grp$date,"%Y-%m-%d %H:%M:%S")
+#act_grp$date=paste(act_grp$date,"00:00:00")
+#act_grp$date=strptime(act_grp$date,"%Y-%m-%d %H:%M:%S")
 
 ```
 ##What is mean total number of steps taken per day?
@@ -100,7 +104,7 @@ actdf_imputed$steps[is.na(actdf$steps)]=act_avg$Steps
 act_grp2=sqldf("select date, sum(steps) as Steps from actdf_imputed group by date")
 
 #Create Steps histogram
-hist(act_grp2$Steps,col="red",main="Total number of steps taken per day", xlab="Steps taken a day")
+hist(act_grp2$Steps,col="red",main="Imputed Data Total number of steps taken per day", xlab="Steps taken a day")
 
 ```
 
@@ -119,5 +123,24 @@ As we can see, there were no mayor differences usint the imputed data set values
 For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 
 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+```{r}
+#Add a new column indicating if the date is a weekday or weekend  
+#0,6 means sunday and saturday, therefore is_weekend=TRUE
+actdf_imputed$is_weekend=(strftime(as.Date(actdf_imputed$date),'%w') %in% c(0,6))
+#average steps by day
+act_week=sqldf("select date,(case is_weekend
+                              when 1 then 'weekend'
+                              else     'weekday'
+                             end) as week_fact, avg(steps) as Steps 
+                 from actdf_imputed 
+                 group by date,is_weekend"
+               )
+#converts new column to a factor
+act_week$week_fact=as.factor(act_week$week_fact)
+
+```
+
+
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
