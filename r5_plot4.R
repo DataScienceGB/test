@@ -19,17 +19,29 @@ actdf_imputed$steps[is.na(actdf$steps)]=act_avg$Steps
 actdf_imputed$is_weekend=(strftime(as.Date(actdf_imputed$date),'%w') %in% c(0,6))
 
 #average steps by day
-act_week=sqldf("select date,(case is_weekend
+act_week=sqldf("select interval,(case is_weekend
                               when 1 then 'weekend'
                               else     'weekday'
                              end) as week_fact, avg(steps) as Steps 
                  from actdf_imputed 
-                 group by date,is_weekend"
+                 group by interval,is_weekend"
                )
 #converts new column to a factor
 act_week$week_fact=as.factor(act_week$week_fact)
+#act_week$date=paste(act_week$date,"00:00:00")
+#act_week$date=strptime(act_week$date,"%Y-%m-%d %H:%M:%S")
+
+#load ggplot2
 library(ggplot2)
 
-#Create Steps histogram
-#Calculate Mean and Median steps taken per day
+#Create  weekday vs weekend comparission chart
+p<-ggplot(act_week,aes(x=interval,y=Steps))+
+            geom_line(color="blue",)+ 
+            facet_wrap(~ week_fact,ncol=1)+ 
+            theme_bw(base_family="Arial")+
+            labs(y="Number of steps",x="Interval")+
+            theme(strip.background = element_rect(colour = "black", fill = "orange"))
+
+print(p)
+
 
