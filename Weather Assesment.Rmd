@@ -1,0 +1,9 @@
+---
+title: "Weather Impact in Health and Economics"
+author: "DataScienceGB"
+date: "17/06/2015"
+output: html_document
+---
+
+##Synopsis
+We all know that human activities, varing from vacations and picknics, to publich health and economics  are related to weahter conditions.
