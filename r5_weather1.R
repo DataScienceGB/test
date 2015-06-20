@@ -1,4 +1,5 @@
 library(sqldf)
+library(xtable)
 library(ggplot2)
 
 #Check for file existance
@@ -64,25 +65,50 @@ econ_grp=sqldf("select EVTYPE,
                 group by EVTYPE
                 order by 3 desc limit 10"
                )
+#set impact to millions of usd
+econ_grp$econ_impact=round(econ_grp$econ_impact/1000000 ,0)
  
-p<-ggplot(health_grp,aes(x=interval,y=Steps))+
-            geom_line(color="blue",)+ 
-            facet_wrap(~ week_fact,ncol=1)+ 
-            theme_bw(base_family="Arial")+
-            labs(y="Number of steps",x="Interval")+
-            theme(strip.background = element_rect(colour = "black", fill = "orange"))
+p<-ggplot(health_grp,aes(x=reorder(EVTYPE, +total_impact),y=total_impact)) +
+            geom_bar(stat="identity",fill=1:10) +
+            scale_fill_manual(values=c(1:10)) + 
+            coord_flip() +
+            geom_text(aes(y=total_impact,ymax=total_impact, 
+                           label=total_impact)
+                           ,position= position_dodge(width=0.2), hjust=.5 ,
+                            vjust=1.2,
+                            size=rel(3),angle=90)+
+            theme_bw(base_family = "Arial") +
+            theme(panel.background = element_rect(fill = "lightblue"),
+                  panel.grid.minor = element_line(linetype = "dotted")) +
+            labs(title="Severe Weather Public Health Impact")+
+            labs(y="Injuries + Fatalities" ,x="Event Type")
+            
 
 print(p)
+
+                           #label=round(econ_impact/1000000,2)
+g<-ggplot(econ_grp,aes(x=reorder(EVTYPE, +econ_impact),y=econ_impact)) +
+            geom_bar(stat="identity",fill=1:10) +
+            scale_fill_manual(values=c(1:10)) +
+            coord_flip() +
+            geom_text(aes(y=econ_impact,ymax=econ_impact,
+                           label= econ_impact)
+                           ,position= position_dodge(width=0.2), hjust=.5 ,
+                            vjust=1.2,
+                            size=rel(3),angle=90)+
+            theme_bw(base_family = "Arial") +
+            theme(panel.background = element_rect(fill = "lightblue"),
+                  panel.grid.minor = element_line(linetype = "dotted")) +
+            labs(title="Severe Weather Economic Impact")+
+            labs(y="Properties and Crops Damage (Millions of Dollars)" ,x="Event Type")
+
+
+print(g)
+
 
 
 #convert to Date type
 #stormdf$BGN_DATE=paste(act_grp$date,"00:00:00")
 stormdf$BGN_DATE=strptime(stormdf$BGN_DATE,"%m/%d/%Y %H:%M:%S")
 
-#Create Steps histogram
-hist(act_grp$Steps,col="red",main="Total number of steps taken per day", xlab="Steps taken a day")
-
-#Calculate Mean and Median steps taken per day
-mean(act_grp$Steps)
-median(act_grp$Steps)
 
