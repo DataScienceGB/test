@@ -84,7 +84,7 @@ p<-ggplot(health_grp,aes(x=reorder(EVTYPE, +total_impact),y=total_impact)) +
             labs(y="Injuries + Fatalities" ,x="Event Type")
             
 
-print(p)
+#print(p)
 
                            #label=round(econ_impact/1000000,2)
 g<-ggplot(econ_grp,aes(x=reorder(EVTYPE, +econ_impact),y=econ_impact)) +
@@ -103,12 +103,13 @@ g<-ggplot(econ_grp,aes(x=reorder(EVTYPE, +econ_impact),y=econ_impact)) +
             labs(y="Properties and Crops Damage (Millions of Dollars)" ,x="Event Type")
 
 
-print(g)
+#print(g)
+
+grid.arrange(g,p,nrow=2)
 
 
-
+#Not used in porject but useful
 #convert to Date type
-#stormdf$BGN_DATE=paste(act_grp$date,"00:00:00")
-stormdf$BGN_DATE=strptime(stormdf$BGN_DATE,"%m/%d/%Y %H:%M:%S")
+#stormdf$BGN_DATE=strptime(stormdf$BGN_DATE,"%m/%d/%Y %H:%M:%S")
 
 

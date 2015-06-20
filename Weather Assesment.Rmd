@@ -16,12 +16,14 @@ We'll review the U.S. National Oceanic and Atmospheric Administration's (NOAA) s
 
 Data used for this analysis is taken directly from [Coursera Reproducible Research Assesment Data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2)
 
-We'll be using sqldf package to manipulate data  as long with classical R vector manipulation to  set data ready for our anlysis
+We'll be using sqldf package to manipulate data  as long with classical R vector manipulation to  set data ready for our anlysis.
+For figures, please be adised that you'll need xtable, ggplot2 and gridExtra packages installed.
 
 ```{r LibraryLoad}
 library(sqldf)
-library(xtable)
+library(gridExtra)
 library(ggplot2)
+library(xtable)
 ```
 
 First we'll load data into a dataframe to work with it. 
@@ -87,36 +89,39 @@ Now we'll group and summarize economic and health impact by event type. This wil
 
 ## Summarize Data to prepare for results
 ## for both health and economics will only use the top 10 events
-## Summarize conomic impact by event type
 
-econ_grp=sqldf("select EVTYPE,
-               count(*) as number_of_events,
-                sum(
-                   (PROPDMG*PROPDMGEXP) +
-                   (CROPDMG*CROPDMGEXP)
-                  ) as econ_impact ,
-                avg(
-                   (PROPDMG*PROPDMGEXP) +
-                   (CROPDMG*CROPDMGEXP)
-                  ) as econ_impact_by_event
-                from stormdf
-                where (PROPDMG+CROPDMG)!='NA'
-                group by EVTYPE
-                order by 3 desc limit 10"
-               )
-#set impact to millions of usd
-econ_grp$econ_impact=round(econ_grp$econ_impact/1000000 ,0)
-
-
-#summarize health_impact by event type
-health_grp=sqldf("select EVTYPE,count(*) as N, sum(FATALITIES+INJURIES) as total_impact,
-                   avg(FATALITIES+INJURIES) as impact_by_event 
+## Summarize health_impact by event type
+## Select only top 10 events
+health_grp=sqldf("select EVTYPE,
+                  count(*) as number_of_events, 
+                  avg(FATALITIES+INJURIES) as impact_by_event,
+                  sum(FATALITIES+INJURIES) as total_impact                  
                   from stormdf
                   where (FATALITIES+INJURIES)!='NA'
                   group by EVTYPE
-                  order by 3 desc limit 10")
+                  order by 4 desc limit 10")
 
 
+## Summarize conomic impact by event type
+## selects only top 10
+econ_grp=sqldf("select EVTYPE,
+               count(*) as number_of_events,
+              avg(
+                   (PROPDMG*PROPDMGEXP) +
+                   (CROPDMG*CROPDMGEXP)
+                  ) as econ_impact_by_event,
+              sum(
+                   (PROPDMG*PROPDMGEXP) +
+                   (CROPDMG*CROPDMGEXP)
+                  ) as econ_impact 
+                from stormdf
+                where (PROPDMG+CROPDMG)!='NA'
+                group by EVTYPE
+                order by 4 desc limit 10"
+               )
+#set impact to millions of usd
+econ_grp$econ_impact=round(econ_grp$econ_impact/1000000 ,0)
+econ_grp$econ_impact_by_event=round(econ_grp$econ_impact_by_event/1000000 ,0)
 
 
 ```
@@ -125,68 +130,54 @@ health_grp=sqldf("select EVTYPE,count(*) as N, sum(FATALITIES+INJURIES) as total
 
 Now we are going to get our first results, to do it, we'll use the  summary of "Fatalities and Ijuries" by EVTYPE so we can realize the impact of an atmospheric event in human health.
 
-``` {r PublicHealthImapct}
-
-
-summary(health_grp)
-
-health_grp
+``` {r PublicHealthImapct, results='asis'}
+tab1=xtable(health_grp,caption="Figure 1: Weather impact on public health")
+print(tab1, type="html")
 
 ```
+
 
 As we can see by our summary data, TORNADOS have the higher impact to public health, their impact almost dobules then the total impact of the rest of the higher impact events. 
 
 **Attention must be placed into HEAT related events  (EXCESSIVE HEAT and HEAT), eventhough their total impact is almost 10 times less than #TORNADOS, they represent the higher impact by event, meaning that each time a HEAT relanted EVTYPE is presented we'll expect almost 6 times more impact than a TORNADO. **
 
-The following graph give us a clear view of weather impact in Public Health:
 
-```{r HealthPlot} 
-p<-ggplot(health_grp,aes(x=reorder(EVTYPE, +total_impact),y=total_impact)) +
-            geom_bar(stat="identity",fill=1:10) +
-            scale_fill_manual(values=c(1:10)) +
-            coord_flip() +
-            geom_text(aes(y=total_impact,ymax=total_impact, 
-                           label=total_impact)
-                           ,position= position_dodge(width=0.2), hjust=.5 ,
-                            vjust=1.2,
-                            size=rel(3),angle=90)+
-            theme_bw(base_family = "Arial") +
-            theme(panel.background = element_rect(fill = "lightblue"),
-                  panel.grid.minor = element_line(linetype = "dotted")) +
-            labs(title="Severe Weather Public Health Impact")+
-            labs(y="Injuries + Fatalities" ,x="Event Type")
-print(p)
-```
 
 Now lets review weather impact on economics. 
 
-``` {r EconomicImapct}
+``` {r EconomicImapct, results='asis'}
 
-
-summary(econ_grp)
-
-econ_grp
+#econ_grp
+tab2=xtable(econ_grp,caption="Figure 2: Weather impact on public economy")
+print(tab2, type="html")
 
 ```
+
 
 As we can see by our summary data, FLOOD events have the higher impact on economics. 
 
 **Attention must be placed into HURRICANE/TYPHOON + HURRICANE events, their impact, each time they hit, is eight times bigger than any other event**  
 
 
-The following graph give us a clear view of weather impact in economics:
+The following graphs give us a clearer view of weather impact in health and economics:
  
-```{r EconomicsDamagePlot}
- 
+```{r Health impact and EconomicsDamage Plots}
+
+
+p<-ggplot(health_grp,aes(x=reorder(EVTYPE, +total_impact),y=total_impact)) +
+            geom_bar(stat="identity",fill=1:10) +
+            scale_fill_manual(values=c(1:10)) +
+            coord_flip() +        
+            theme_bw(base_family = "Arial") +
+            theme(panel.background = element_rect(fill = "lightblue"),
+                  panel.grid.minor = element_line(linetype = "dotted")) +
+            labs(title="Severe Weather Public Health Impact")+
+            labs(y="Injuries + Fatalities" ,x="Event Type")
+
  g<-ggplot(econ_grp,aes(x=reorder(EVTYPE, +econ_impact),y=econ_impact)) +
             geom_bar(stat="identity",fill=1:10) +
             scale_fill_manual(values=c(1:10)) +
-            coord_flip() +
-            geom_text(aes(y=econ_impact,ymax=econ_impact,
-                           label= econ_impact)
-                           ,position= position_dodge(width=0.2), hjust=.5 ,
-                            vjust=1.2,
-                            size=rel(3),angle=90)+
+            coord_flip() +            
             theme_bw(base_family = "Arial") +
             theme(panel.background = element_rect(fill = "lightblue"),
                   panel.grid.minor = element_line(linetype = "dotted")) +
@@ -194,10 +185,18 @@ The following graph give us a clear view of weather impact in economics:
             labs(y="Properties and Crops Damage (Millions of Dollars)" ,x="Event Type")
 
 
-print(g)
+
+grid.arrange(p, g,nrow=2)
+grid.rect(.5,.5,width=unit(.99,"npc"), height=unit(0.99,"npc"), 
+          gp=gpar(lwd=3, fill=NA, col="blue"))
 
 ``` 
+
+Figure 3: Weather impact in public health and economy
+
 
 ## Summary
 
 After analyzing NOAA database, we are shure that severe weather impacts human activities, what must be decided is if prevention efforts should focus on those events with higher total impact numbers or those that casue the higher impact each time they cross with humans.
+
+
