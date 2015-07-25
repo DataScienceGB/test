@@ -1,5 +1,5 @@
 ---
-title: "ToothGrowth Analysis"
+title: "Guinea Pigs Tooth Growth Analysis"
 author: "DataScienceGB"
 date: "24/07/2015"
 output: pdf_document
@@ -7,8 +7,8 @@ source: help(ToothGrowth)
 ---
 
 ##Overview
-After a field and clinical experiment, using 10 guinea pigs to observe the impact of Vitamin C on Tooth Growth, there is a need to use Statistical Methods to determine which of the substances used (Vitamin C or Orange Juice) and doses (.5,1 or 2 mg) have most impact on ToothGrowth. 
-Exploratory Data Analysys and T Tests methods to find out
+After a field and clinical experiment, using 10 guinea pigs to observe the impact of Vitamin C on Tooth Growth, there is a need to use Statistical Methods to determine which of the substances used (Vitamin C or Orange Juice) and doses (.5, 1.0 or 2.0 mg) have most impact on pigs tooth growth. 
+We'll use Exploratory Data Analysis (EDA) thechnics and T-Tests methods to find out.
 
 ##Exploratory Data Analysis
 
@@ -40,7 +40,9 @@ print (c("OJ mean: ",ojm))
 
 Fig. 1 Basic Data Summary
 
-As seen from previous figure, as expected, we have 60 observations with three variables each representing: Tooth length, Supplement (OJ=Orange Juice, VC=Vitamin C) and Dose (.5,1 or 2 mg). We also foundout that the OJ mean is larger than the overall mean and larger the the VC mean.
+As seen from previous figure, and as expected, we have 60 observations with three variables each representing: Tooth length, Supplement (OJ=Orange Juice, VC=Vitamin C) and Dose (.5, 1.0 or 2.0 mg). 
+
+Having a look a the mean values, we also foundout that the OJ mean (20.66) is larger than the overall mean (18.81) and larger the the VC mean (16.96).
 
 Let's have a visual representation of our data.
 
@@ -59,9 +61,86 @@ print(p)
 ```
 Fig2. Data Visual Representation
 
-By examining previous graph, we can see that for .5 and 1 mg doses, Orange Juice offers more tooth growth than  Vitamin C, meanwhile there is no clear difference when reviewing the 2mg dose.
+By examining previous graph, we can see that for .5 and 1.0 mg doses, Orange Juice offers more tooth growth than  Vitamin C, meanwhile there is no clear difference when reviewing the 2.0 mg dose.
 
 ## Hypothesis Tests
 
-We'll test ToothGrowth data using T Tests method to accept or reject our Null Hypothesis.
-For this tests, we'll assume that data is not grouped (and should not be since measured pigs cannot belog to both tests groups) and also that variance is unequal.
+We'll test ToothGrowth data using T-Test method to accept or reject our null hypothesis.
+For this tests, we'll **assume** that data is not grouped (and should not be since measured pigs cannot belog to both tests groups) and also that **variance is unequal**.
+
+Lets set our **null hypothesis** (Ho) to be the mean of both sets equal to 0, having:
+$$ \mu VC  = \mu OJ = 0 $$
+ 
+### First Test
+Lets first test the supplement regardless of the dose.
+
+```{r test 1}
+
+vc=subset(ToothGrowth,ToothGrowth$sup=="VC")
+oj=subset(ToothGrowth,ToothGrowth$sup=="OJ")
+t.test(vc$len,oj$len,mpaired = FALSE, var.equal = FALSE)
+```
+Fig3. General Test Vitamin C vs Orange Juice.
+
+We new from Fig1. that OJ's mean is larger than VC's mean (20.66 vs 16.96), however, our T Test shows a p-value larger than our $\alpha$ value used, being 6% lager than 5% (we ran our test at a 95 % confidence interval).
+
+
+### Second Test
+Now that we know that there is no clear winner when considering all the doses, lets break it down, and compare dose against dose in each supplement
+
+```{r test 2}
+
+vc=subset(ToothGrowth,ToothGrowth$sup=="VC")
+oj=subset(ToothGrowth,ToothGrowth$sup=="OJ")
+## .5 mg doses
+vc05=subset(vc,vc$dose==.5)
+oj05=subset(oj,oj$dose==.5)
+## 1 mg doses
+vc10=subset(vc,vc$dose==1.0)
+oj10=subset(oj,oj$dose==1.0)
+## 2 mg doses
+vc20=subset(vc,vc$dose==2.0)
+oj20=subset(oj,oj$dose==2.0)
+
+#Now lets run the tests
+#.5 mg dose test
+t.test(vc05$len,oj05$len,mpaired = FALSE, var.equal = FALSE)
+
+#1.0 mg dose test
+t.test(vc10$len,oj10$len,mpaired = FALSE, var.equal = FALSE)
+
+#2.0 mg dose test
+t.test(vc20$len,oj20$len,mpaired = FALSE, var.equal = FALSE)
+
+```
+Fig4. Diffrent doses Test Vitamin C vs Orange Juice.
+
+Our Fig. 1 EDA visualization shows us better results using Orange Juice (OJ) for .5 and 1 mg doses, previous tests confirm it. In both p-value is smaller that our $\alpha$ value and confidence intervals don't cross 0.
+
+For 2.0 mg doses our T Test shows a p-value larger than our $\alpha$ value, being 9% lager than 5% and confidence interval contains 0. In such dose cases data can't confirm which supplement is better than the other.
+
+###One Last Test
+Lets try to find if using 1 mg of OJ might get better results than 2 mg of VC
+
+```{r test 3}
+
+vc=subset(ToothGrowth,ToothGrowth$sup=="VC")
+oj=subset(ToothGrowth,ToothGrowth$sup=="OJ")
+## OJ 1 mg doses
+
+oj10=subset(oj,oj$dose==1.0)
+## VC 2 mg doses
+vc20=subset(vc,vc$dose==2.0)
+
+#Now lets run the tests
+
+#1.0 mg dose test
+t.test(vc20$len,oj10$len,mpaired = FALSE, var.equal = FALSE)
+
+```
+Fig.5 1.0 mg of OJ vs 2.0 mg of VC
+
+Due to a p-value larger than our $\alpha$ and a confidence interval containg 0, we cannot conclude thet using 1.0 doses of OJ will get better results than 2.0 mg does of VC.
+
+## Summary
+After reviewing standard R ToothGrowth dataset one can conclude that for smaller doses (.5 mg  and 1.0 mg) OJ yields better results than VC.
