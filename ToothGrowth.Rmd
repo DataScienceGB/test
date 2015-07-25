@@ -1,0 +1,67 @@
+---
+title: "ToothGrowth Analysis"
+author: "DataScienceGB"
+date: "24/07/2015"
+output: pdf_document
+source: help(ToothGrowth)
+---
+
+##Overview
+After a field and clinical experiment, using 10 guinea pigs to observe the impact of Vitamin C on Tooth Growth, there is a need to use Statistical Methods to determine which of the substances used (Vitamin C or Orange Juice) and doses (.5,1 or 2 mg) have most impact on ToothGrowth. 
+Exploratory Data Analysys and T Tests methods to find out
+
+##Exploratory Data Analysis
+
+Let's first start by analysing the data provided 
+
+```{r load data}
+library(ggplot2)
+library(knitr)
+data("ToothGrowth")
+
+str(ToothGrowth)
+kable(summary(ToothGrowth))
+
+kable(head(ToothGrowth,3))
+kable(tail(ToothGrowth,3))
+
+gm=round(mean(ToothGrowth$len),2)
+tmp=NULL
+tmp=subset(ToothGrowth,ToothGrowth$sup=="VC")
+vcm=round(mean(tmp$len),2)
+tmp=subset(ToothGrowth,ToothGrowth$sup=="OJ")
+ojm=round(mean(tmp$len),2)
+
+print (c("General mean: ",gm))
+print (c("VC mean: ", vcm))
+print (c("OJ mean: ",ojm))
+
+```
+
+Fig. 1 Basic Data Summary
+
+As seen from previous figure, as expected, we have 60 observations with three variables each representing: Tooth length, Supplement (OJ=Orange Juice, VC=Vitamin C) and Dose (.5,1 or 2 mg). We also foundout that the OJ mean is larger than the overall mean and larger the the VC mean.
+
+Let's have a visual representation of our data.
+
+```{r graph data}
+
+p<-ggplot(ToothGrowth,aes(x=factor(dose),y=len,fill=factor(dose))) +
+            geom_boxplot() +
+            facet_grid(. ~ supp )+        
+            scale_x_discrete("Dose in mg") +
+            labs(y="Tooth Growth")+          
+          theme( strip.background = element_rect(colour = "black", fill = "orange")                               )
+
+print(p)
+
+
+```
+Fig2. Data Visual Representation
+
+By examining previous graph, we can see that for .5 and 1 mg doses, Orange Juice offers more tooth growth than  Vitamin C, meanwhile there is no clear difference when reviewing the 2mg dose.
+
+## Hypothesis Tests
+
+We'll test ToothGrowth data using T Tests method to accept or reject our Null Hypothesis.
+For this tests, we'll assume that data is not grouped (and should not be since measured pigs cannot belog to both tests groups) and also that variance is unequal.
