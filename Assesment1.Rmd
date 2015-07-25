@@ -5,14 +5,14 @@ date: "10/06/2015"
 output: html_document
 ---
 
-#Loading and preprocessing the data
+##Loading and preprocessing the data
 
 ```{r}
 library(sqldf)
 ```
 We'll be using sqldf package to perfom data agregation and selection
 Starting by reading data into a DataFrame using standard read.csv funciton
-
+activity.zip file was previously inflated.
 ```{r}
 #Read Activity
 actdf=read.csv("./activity.csv",stringsAsFactors=F)

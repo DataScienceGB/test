@@ -1,0 +1,119 @@
+---
+title: "Central Limit Theorm"
+author: "DataScienceGB"
+date: "21/07/2015"
+output: pdf_document
+---
+
+##Overview
+Central Limit Theorm is a vital concept for Statistical Inference, it shows that studying  samples will lead to results equivalents to the whole population. 
+Through this report, we'll show CLT in action, to do this, we'll analyze and compare the mean of several samples of random generated numbers to the value of it's population mean.
+
+##Simulations
+To illustrate CLM, we'll simulate a run for 1,000 samples, each sample inlcludes 40 random generated numbers based on the "Exponential Statistical Distribution" using R's rexp() function.  
+
+After generating the numbers, they will be plotted to have a visual representation of the simulation. As you'll see, the mean values of each sample will form an "Uniform Statistical Distribution Bell" graph
+
+To have a better view of the CLM and larger samples sizes impact, will be using values of 5, 15 and 40 samples, each creating 1000 samples.
+
+R code is based on Brian Caffo's simulations used on the Statistical Inference Coursera class, in particular those used in lesson 7.
+
+```{r Libraries and globals}
+library(ggplot2)
+
+
+nosim <- 1000
+lambda=.20
+mn=1/lambda
+std=1/lambda
+
+set.seed(79)
+```
+
+```{r simulation}
+
+cfunc <- function(x, n1) sqrt(n1) * (mean(rexp(n1,lambda)) - mn) /std
+dat <- data.frame(
+  x = c(apply(matrix(sample(rexp(n,lambda), nosim * 5, replace = TRUE),
+                     nosim), 1, cfunc, 5),
+        apply(matrix(sample(rexp(n,lambda), nosim * 15, replace = TRUE),
+                     nosim), 1, cfunc, 15),
+        apply(matrix(sample(rexp(n,lambda), nosim * 40, replace = TRUE),
+                     nosim), 1, cfunc, 40)
+        ),
+  size = factor(rep(c(5, 15, 40), rep(nosim, 3))))
+g <- ggplot(dat, 
+        aes(x = x, fill = size)) + 
+        geom_histogram(alpha = .20, binwidth=.3, colour = "blue", 
+                        aes(y = ..density..))
+g <- g + stat_function(fun = dnorm, size = 1, colour="red")
+print (g + facet_grid(. ~ size))
+
+```
+Fig.1 Differente sample sizes to show Uniform Distribution of sample
+
+Please note that the larger the sample, our data distribution draws a "better" Uniform Distribution Bell graph.
+
+
+##Simulation 2
+
+The generated random numbers are created using a lambda value of .20 wich by definition , will have a mean value of 1/.20 = 5, this value represents the mean of our population.
+
+If CLM works as expected, our simulation example, will show a sample mean whose value is close to the population mean, so in this excersice a value of 5 will be the center of our "Bell" graph.
+
+The Following R code will plot the mean of our simulated rexp values.
+
+
+```{r simulation 2}
+
+set.seed(79)
+cfunc <- function(x, n1)  (mean(rexp(n1,lambda))) 
+dat <- data.frame(
+  x = c(
+        apply(matrix(sample(rexp(n,lambda), nosim * 40, replace = TRUE),
+                     nosim), 1, cfunc, 40)
+        ),
+  size = factor(rep(c( 40), rep(nosim, 1))))
+g <- ggplot(dat, 
+        aes(x = x, fill = size)) + 
+        geom_histogram(alpha = .20, binwidth=.3, colour = "blue", 
+                        aes(y = ..density..))
+##g <- g + stat_function(fun = dnorm, size = 1, colour="red")
+g <- g + geom_vline(xintercept=mn, size=2, colour="red")
+print (g + facet_grid(. ~ size))
+
+```
+Fig2. Population Mean vs. Sample Mean
+
+
+##Comparing Population vs Sample
+
+Previous example show us a graphical view of the theoretical distribution center (mean=1/lambda) vs. 40 simulated exponentials mean.
+
+Lets see'em by numbers. Will also show the theoretical Variance vs 40 simulated exponential variance.
+
+```{r number comparisson, results='asis' }
+set.seed(79)
+cfunc <- function(x, n1)  (mean(rexp(n1,lambda))) 
+dat <- data.frame(
+  x = c(
+        apply(matrix(sample(rexp(n,lambda), nosim * 40, replace = TRUE),
+                     nosim), 1, cfunc, 40)
+        ),
+  size = factor(rep(c( 40), rep(nosim, 1))))
+
+
+print(c("40 exponentials mean is: ", round(mean(dat$x),2),"Distribution Mean is:" ,1/lambda))
+
+print(c("40 exponentials variance is: ", round(var(dat$x),2),"Distribution Variance is:" ,(((1/lambda)^2)/40)))
+
+
+```
+
+As we can see the results, both mean and variance, are very close from each other.
+
+
+##Summary
+As we saw throght our different simulations, graphs and value comparissons, anlayzing samples lead us to know the behavior of the population. This is thanks to the "Central Line Theorm"
+
+
