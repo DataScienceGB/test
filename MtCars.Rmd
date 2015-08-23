@@ -1,0 +1,222 @@
+---
+title: "Motor Trend MPG Analysis"
+source: help(mpg)
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_crop: no
+    fig_height: 6
+    fig_width: 7.5
+    highlight: kate
+---
+
+##Executive Summary
+Since massive introduction of automatic transmissions, there's been a lot of talk regarding its effect in increment of gas consumption when compared against traditional manual transmissions.
+
+Motor Trend got its hands onto this, hiring a specialized team of Data Scientists to analyze a collection of data about different car models and characteristics that are been put to test to find out the facts about MPG and car transmissions. 
+
+The reasearch will be focused in answering the following questions:
+
+* “Is an automatic or manual transmission better for MPG”
+* "Quantify the MPG difference between automatic and manual transmissions"
+
+After the analysis, and for surprise of many of our readers, we found out that since transmission type has an impact on MPG, other factors have a larger impact on our gas economy. 
+
+We invite you tu read through out this article to find out what our Data Scientists bring out to light. 
+
+##Exploratory Data Analysis
+
+Let's first start by analysing our data set. 
+
+```{r load data, echo=FALSE}
+library(ggplot2)
+library(knitr)
+data("mtcars")
+
+mtcarsorig=mtcars
+#Making factors out of categorical variables
+mtcars$cyl=factor(mtcars$cyl)
+mtcars$vs=factor(mtcars$vs)
+mtcars$gear=factor(mtcars$gear)
+mtcars$carb=factor(mtcars$carb)
+
+#Checking out general and by transmission type mean values
+df=data.frame(lapply(list(mtcars$mpg,subset(mtcars,mtcars$am==1)$mpg,subset(mtcars,mtcars$am==0)$mpg),mean))
+colnames(df)=c("General Mean","Automatic Transmission Mean","Manual Transmission Mean")
+
+```
+
+
+```{r print means, echo=FALSE}
+kable(df)
+
+```
+
+Fig. 1 Basic Mean Analysis
+
+After checking previous values, everyone will go out and buy automatic transmission models, since our mean anlaysis shows that they will save 7 gallons per mile when compared against manual transmission models. Please check the our graph in the apendix section.
+Is this the answer we are looking for? Our Data Scientists will show us.
+
+Your first thought, got to be that the simple MPG mean by transmission, is not by itself a good enough indicator, you might think that it's not fair to compare a large Ferrari engine (with manual transmission) against a small family car (with automatic transmission), and you're right!
+
+So there are other factors affecting our MPG, let's keep our analysis going on.
+
+##Statistical Inference and Regression Models
+
+Our first choice is a simple model using transmission type to predict our MPG, this looks like this $$ lm(mpg~am,mtcars) $$ 
+
+```{r Models , echo=FALSE}
+fit=lm(mpg~am,mtcars)
+ars=round(summary(fit)$adj.r.squared,2)
+sigma=round(summary(fit)$sigma,2)
+
+```
+
+The "Adjusted R-Squared" value of previous model give a value of `r ars`, implying that for our sample data transmission type has an impact on only 34% of our cases. As a base line comparisson this model throws a **$\sigma$ = to `r sigma`**
+
+Before we move to other variables, lets retake the initial question. To do so, we'll run out some **statistical inference student's tests**. 
+We'll run three tests: 
+*Transmission type only 
+*Transmission type for 4 cylinders motors
+*Transmission type for engines with more than 4 cylinders. 
+For those readers interested in the T test, will be using something like this: 
+** t.test(mtcars[mtcars$am==0,"mpg"],mtcars[mtcars$am==1,"mpg"], mpaired = FALSE, var.equal = FALSE) **
+
+```{r t.tests , echo=FALSE}
+
+t1=t.test(mtcars[mtcars$am==0,"mpg"],mtcars[mtcars$am==1,"mpg"], mpaired = FALSE, var.equal = FALSE)
+## Subset and test 4 cyl motors
+mtcars2=subset(mtcars,mtcars$cyl==4)
+t2=t.test(mtcars2[mtcars2$am==0,"mpg"],mtcars2[mtcars2$am==1,"mpg"],mpaired = FALSE, var.equal = FALSE)
+   
+
+## Subset and test > 4 cyl motors
+mtcars2=subset(mtcars,mtcars$cyl!=4)
+t3=t.test(mtcars[mtcars2$am==0,"mpg"],mtcars2[mtcars2$am==1,"mpg"],mpaired = FALSE, var.equal = FALSE)
+
+```
+
+Our T Tests on MPG and transmission, returned P values lower than the $\alpha$ for the first two data sets (global and 4 cylinders engines) having values of **`r t1$p.value`** and **`r t2$p.value`** respectively this shows a that we cannot reject the effect of transmission type and MPG for this sample, however, our test on engines larger than 4 cylinders, shows a different story: the P value is larger than the $\alpha$ having a `r t3$p.value` value, which will keep us digging in the data.
+
+Following we'll show a table with the correlation between MPG and the other variables, to discard the effect's direction, will present the five more correlated variables. Data is presented in decreasing absolute value. 
+
+```{r print correlations, echo=FALSE}
+print(sort(abs(cor(mtcarsorig)[1:5,1]),decreasin=T))
+
+```
+
+To have a quick view of this relations, please check our pair graph in the appendix section.
+Let's move to the models, we already have a simple one, now we'll create different models using a nested approch to see the impact of adding new variables to the model.
+
+```{r Models2 , echo=FALSE}
+model=data.frame()
+
+fit=lm(mpg~am,mtcars)
+model[1,"vars"]="mpg~am"
+model[1,"ars"]=  round(summary(fit)$adj.r.squared,2)
+model[1,"sigma"]=round(summary(fit)$sigma,2)
+
+#fit2=update(mpg~.,mtcars)
+fit2=update(fit,mpg~am+cyl)
+model[2,"vars"]="mpg~am+cyl "
+model[2,"ars"]=  round(summary(fit2)$adj.r.squared,2)
+model[2,"sigma"]=round(summary(fit2)$sigma,2)
+
+fit3=update(fit,mpg~am+cyl+drat)
+model[3,"vars"]="mpg~am+drat "
+model[3,"ars"]=  round(summary(fit3)$adj.r.squared,2)
+model[3,"sigma"]=round(summary(fit3)$sigma,2)
+
+fit4=update(fit,mpg~am+cyl+drat+wt)
+model[4,"vars"]="mpg~am+drat+wt "
+model[4,"ars"]=  round(summary(fit4)$adj.r.squared,2)
+model[4,"sigma"]=round(summary(fit4)$sigma,2)
+
+fit5=update(fit,mpg~am+cyl+drat+wt)
+model[5,"vars"]="mpg~am+cyl+drat+wt "
+model[5,"ars"]=  round(summary(fit5)$adj.r.squared,2)
+model[5,"sigma"]=round(summary(fit5)$sigma,2)
+
+fit6=update(fit,mpg~am+cyl+drat+wt+qsec)
+model[6,"vars"]="mpg~am+cyl+drat+wt+qsec "
+model[6,"ars"]=  round(summary(fit6)$adj.r.squared,2)
+model[6,"sigma"]=round(summary(fit6)$sigma,2)
+
+fit7=update(fit,mpg~am+cyl+drat+wt+qsec+vs)
+model[7,"vars"]="mpg~am+cyl+drat+wt+qsec+vs "
+model[7,"ars"]=  round(summary(fit7)$adj.r.squared,2)
+model[7,"sigma"]=round(summary(fit7)$sigma,2)
+
+fit8=update(fit,mpg~am+cyl+drat+wt+qsec+vs+gear)
+model[8,"vars"]="mpg~am+cyl+drat+wt+qsec+vs+gear "
+model[8,"ars"]=  round(summary(fit8)$adj.r.squared,2)
+model[8,"sigma"]=round(summary(fit8)$sigma,2)
+
+
+fit9=update(fit,mpg~am+cyl+wt)
+model[9,"vars"]="mpg~am+cyl+wt "
+model[9,"ars"]=  round(summary(fit9)$adj.r.squared,2)
+model[9,"sigma"]=round(summary(fit9)$sigma,2)
+
+fit10=update(fit,mpg~am+cyl+qsec)
+model[10,"vars"]="mpg~am+cyl+qsec "
+model[10,"ars"]=  round(summary(fit10)$adj.r.squared,2)
+model[10,"sigma"]=round(summary(fit10)$sigma,2)
+
+fit11=update(fit,mpg~cyl+drat+wt+qsec)
+model[11,"vars"]="mpg~cyl+drat+wt+qsec "
+model[11,"ars"]=  round(summary(fit11)$adj.r.squared,2)
+model[11,"sigma"]=round(summary(fit11)$sigma,2)
+
+kable(model)
+
+
+```
+
+Previous table shows the Adjusted R Square (ars) and Sigma values of each one of the models we ran. As you can see model 6 (am+cyl+drat+wt+qsec) has the higher ARS value, telling us it impacts `r model[6,"ars"]=  round(summary(fit6)$adj.r.squared,2)*100`% of the cases and it also has the lower sigma value: `r model[6,"ars"]=  round(summary(fit6)$adj.r.squared,2)`, being the more confident model of those evaluated.
+
+## Conclusion
+Well, there were a lot of tests ran here and after all of them, we can say, and answering our original question, that if you're thinking in MPG, along with transmission type, you must also consider cylinders, weight, 1/4 mile time and Rear axle ratio.
+
+After all this numbers, please remind that your millage may vary and one big factor (not measured here) in gas economy, is how hard you step on the accelerator pedal!
+
+##Apendix
+
+Following will show a set of graphs that support our analysis and conclusion
+
+```{r graph1,echo=FALSE}
+
+p<-ggplot(mtcars,aes(x=factor(am),y=mpg,fill=factor(am))) +
+            geom_boxplot() +
+            facet_grid(. ~ am )+        
+            scale_x_discrete("MPG") +
+            labs(y="Transmission Type")+          
+          theme( strip.background = element_rect(colour = "black", fill = "orange")                               )
+
+print(p)
+
+```
+Graph 1. Mean MPG by Transmission type (0=Automatic; 1=Manual)
+
+Well, yes you are reading this graph correctly: Automatic transmissions, in average and in our sample, are better than manual transmissions achieving a better MPG! However our data scientists discovered the whole picture for us.
+
+```{r graph2, echo=FALSE}
+require(GGally)
+
+g = ggpairs(mtcarsorig, lower = list(continuous = "smooth"),params = c(method ="loess"))
+g
+#pairs(mtcars,main="MPG effect analysis")
+
+```
+Graph 2. Correlations Pair Graph
+This plot shows us who variables are correlated betwen them.
+
+```{r graph3, echo=FALSE}
+
+par(mfrow=c(2,2))
+plot(fit6)
+
+```
+Graph 3. Multiple variable residuals and leverage plot
+
+Residuals plot doesn't show any particular pattern, so you can be trust that the selected sample is random in respect of the variables analyzed. Also, it have a nice fit with a Normal distribution.
